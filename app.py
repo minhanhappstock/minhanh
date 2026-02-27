@@ -12,8 +12,16 @@ EMAIL_RECEIVER = "GMAIL_CUA_BAN"
 
 def get_stock_price():
     url = f"https://query1.finance.yahoo.com/v7/finance/quote?symbols=FPT"
-    response = requests.get(url)
+  response = requests.get(url)
+
+print("Status code:", response.status_code)
+print("Response text:", response.text)
+
+if response.status_code == 200:
     data = response.json()
+else:
+    print("API error")
+    data = None
     price = data["quoteResponse"]["result"][0]["regularMarketPrice"]
     return price
 

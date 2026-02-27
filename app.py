@@ -9,11 +9,14 @@ EMAIL_SENDER = "GMAIL_CUA_BAN"
 EMAIL_PASSWORD = "APP_PASSWORD_16_KY_TU"
 EMAIL_RECEIVER = "GMAIL_CUA_BAN"
 # =======================
-
 import requests
 from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
+from flask import Flask
+import os
+
+app = Flask(__name__)
 
 
 def get_stock_price():
@@ -25,14 +28,12 @@ def get_stock_price():
         price = data["quoteResponse"]["result"][0]["regularMarketPrice"]
         return price
     else:
-        print("API error")
         return None
 
 
 def send_email(price):
     if price is None:
-        print("No price to send")
-        return
+        return "API error"
 
     today = datetime.now().strftime("%d-%m-%Y")
 
@@ -44,14 +45,23 @@ def send_email(price):
 
     msg = MIMEText(html_content, "html")
     msg["Subject"] = "Báo cáo cổ phiếu FPT"
-    msg["From"] = "info.lienanh@gmail.com"
-    msg["To"] = "info.lienanh@gmail.com"
+    msg["From"] = "YOUR_EMAIL@gmail.com"
+    msg["To"] = "YOUR_EMAIL@gmail.com"
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login("info.lienanh@gmail.com", "minanhapp123")
+        server.login("YOUR_EMAIL@gmail.com", "YOUR_APP_PASSWORD")
         server.send_message(msg)
+
+    return "Email sent successfully!"
+
+
+@app.route("/")
+def home():
+    price = get_stock_price()
+    result = send_email(price)
+    return result
 
 
 if __name__ == "__main__":
-    price = get_stock_price()
-    send_email(price)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)

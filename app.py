@@ -10,23 +10,32 @@ EMAIL_PASSWORD = "APP_PASSWORD_16_KY_TU"
 EMAIL_RECEIVER = "GMAIL_CUA_BAN"
 # =======================
 
+import requests
+from datetime import datetime
+import smtplib
+from email.mime.text import MIMEText
+
+
 def get_stock_price():
-    url = f"https://query1.finance.yahoo.com/v7/finance/quote?symbols=FPT"
-  response = requests.get(url)
+    url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=FPT"
+    response = requests.get(url)
 
-print("Status code:", response.status_code)
-print("Response text:", response.text)
+    if response.status_code == 200:
+        data = response.json()
+        price = data["quoteResponse"]["result"][0]["regularMarketPrice"]
+        return price
+    else:
+        print("API error")
+        return None
 
-if response.status_code == 200:
-    data = response.json()
-else:
-    print("API error")
-    data = None
-    price = data["quoteResponse"]["result"][0]["regularMarketPrice"]
-    return price
 
 def send_email(price):
+    if price is None:
+        print("No price to send")
+        return
+
     today = datetime.now().strftime("%d-%m-%Y")
+
     html_content = f"""
     <h2>Báo cáo giá cổ phiếu FPT</h2>
     <p>Ngày: {today}</p>
@@ -34,15 +43,15 @@ def send_email(price):
     """
 
     msg = MIMEText(html_content, "html")
-    msg["Subject"] = f"Báo cáo cổ phiếu FPT"
-    msg["From"] = info.lienanh@gmail.com
-    msg["To"] = info.lienanh@gmail.com
+    msg["Subject"] = "Báo cáo cổ phiếu FPT"
+    msg["From"] = "info.lienanh@gmail.com"
+    msg["To"] = "info.lienanh@gmail.com"
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(info.lienanh@gmail.com, minhanhapp123)
+        server.login("info.lienanh@gmail.com", "minanhapp123")
         server.send_message(msg)
+
 
 if __name__ == "__main__":
     price = get_stock_price()
     send_email(price)
-#update

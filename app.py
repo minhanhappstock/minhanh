@@ -20,20 +20,24 @@ app = Flask(__name__)
 
 
 def get_stock_price():
-    try:
-        # API miễn phí (demo key)
-        url = "https://financialmodelingprep.com/api/v3/quote/FPT.VN?apikey=demo"
+    import requests
 
-        response = requests.get(url, timeout=10)
+    try:
+        url = "https://iboard-query.ssi.com.vn/v1/stock/quote"
+        params = {
+            "symbol": "FPT"
+        }
+
+        response = requests.get(url, params=params, timeout=10)
 
         if response.status_code != 200:
-            print("Status code:", response.status_code)
+            print("Status:", response.status_code)
             return None
 
         data = response.json()
 
-        if len(data) > 0:
-            return data[0]["price"]
+        if "data" in data and len(data["data"]) > 0:
+            return data["data"][0]["lastPrice"]
 
     except Exception as e:
         print("ERROR:", e)

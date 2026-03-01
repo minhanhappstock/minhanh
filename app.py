@@ -23,12 +23,18 @@ def get_stock_price():
     import requests
 
     try:
-        url = "https://iboard-query.ssi.com.vn/v1/stock/quote"
+        url = "https://iboard-query.ssi.com.vn/v2/stock/quote"
         params = {
-            "symbol": "FPT"
+            "symbol": "FPT",
+            "page": 1,
+            "size": 1
         }
 
-        response = requests.get(url, params=params, timeout=10)
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+
+        response = requests.get(url, params=params, headers=headers, timeout=10)
 
         if response.status_code != 200:
             print("Status:", response.status_code)
@@ -36,14 +42,13 @@ def get_stock_price():
 
         data = response.json()
 
-        if "data" in data and len(data["data"]) > 0:
+        if data and "data" in data and len(data["data"]) > 0:
             return data["data"][0]["lastPrice"]
 
     except Exception as e:
         print("ERROR:", e)
 
     return None
-
 
 def send_email(price):
     if price is None:

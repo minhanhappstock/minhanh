@@ -22,19 +22,16 @@ app = Flask(__name__)
 def get_stock_price():
     import requests
 
-    try:
-        url = "https://finance.vietstock.vn/data/stockprice"
-        params = {"symbol": "FPT"}
-        headers = {"User-Agent": "Mozilla/5.0"}
+def get_stock_price():
+    import yfinance as yf
 
-        response = requests.get(url, params=params, headers=headers)
+    stock = yf.Ticker("FPT.VN")
+    data = stock.history(period="1d")
 
-        print("Status:", response.status_code)
-        print("Text:", response.text)
+    if not data.empty:
+        return round(data["Close"].iloc[-1], 2)
 
-        if response.status_code != 200:
-            return None
-
+    return None
         data = response.json()
 
         if "Data" in data and len(data["Data"]) > 0:

@@ -19,25 +19,31 @@ import os
 
 app = Flask(__name__)
 
-
 def get_stock_price():
     import requests
 
-    url = "https://finance.vietstock.vn/data/stockprice"
-    params = {
-        "symbol": "FPT"
-    }
+    try:
+        url = "https://finance.vietstock.vn/data/stockprice"
+        params = {"symbol": "FPT"}
+        headers = {"User-Agent": "Mozilla/5.0"}
 
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
+        response = requests.get(url, params=params, headers=headers)
 
-    response = requests.get(url, params=params, headers=headers)
-
-    if response.status_code != 200:
         print("Status:", response.status_code)
-        return None
+        print("Text:", response.text)
 
+        if response.status_code != 200:
+            return None
+
+        data = response.json()
+
+        if "Data" in data and len(data["Data"]) > 0:
+            return data["Data"][0]["LastPrice"]
+
+    except Exception as e:
+        print("ERROR:", e)
+
+    return None
     data = response.json()
 
     if "Data" in data and len(data["Data"]) > 0:

@@ -10,6 +10,7 @@ EMAIL_PASSWORD = "APP_PASSWORD_16_KY_TU"
 EMAIL_RECEIVER = "GMAIL_CUA_BAN"
 # =======================
 import requests
+from bs4 import BeautifulSoup
 from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
@@ -20,20 +21,27 @@ app = Flask(__name__)
 
 
 def get_stock_price():
-    url = "https://query1.finance.yahoo.com/v7/finance/quote?symbols=FPT"
-    response = requests.get(url)
+    url = "https://finance.vietstock.vn/FPT-ctcp-fpt.htm"
+    headers = {"User-Agent": "Mozilla/5.0"}
 
-    if response.status_code == 200:
-        data = response.json()
-        price = data["quoteResponse"]["result"][0]["regularMarketPrice"]
-        return price
-    else:
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
         return None
+
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    price_tag = soup.select_one(".price")
+
+    if price_tag:
+        return price_tag.text.strip()
+
+    return None
 
 
 def send_email(price):
     if price is None:
-        return "API error"
+        return "Không lấy được giá"
 
     today = datetime.now().strftime("%d-%m-%Y")
 
@@ -45,11 +53,11 @@ def send_email(price):
 
     msg = MIMEText(html_content, "html")
     msg["Subject"] = "Báo cáo cổ phiếu FPT"
-    msg["From"] = "YOUR_EMAIL@gmail.com"
-    msg["To"] = "YOUR_EMAIL@gmail.com"
+    msg["From"] = "info.lienanh@gmail.com"
+    msg["To"] = "info.lienanh@gmail.com"
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login("YOUR_EMAIL@gmail.com", "YOUR_APP_PASSWORD")
+        server.login("info.lienanh@gmail.com", "minhanhapp123")
         server.send_message(msg)
 
     return "Email sent successfully!"
@@ -58,8 +66,7 @@ def send_email(price):
 @app.route("/")
 def home():
     price = get_stock_price()
-    result = send_email(price)
-    return result
+    return send_email(price)
 
 
 if __name__ == "__main__":

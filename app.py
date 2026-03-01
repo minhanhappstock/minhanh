@@ -10,7 +10,6 @@ EMAIL_PASSWORD = "APP_PASSWORD_16_KY_TU"
 EMAIL_RECEIVER = "GMAIL_CUA_BAN"
 # =======================
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
 import smtplib
 from email.mime.text import MIMEText
@@ -19,32 +18,25 @@ import os
 
 app = Flask(__name__)
 
-def get_stock_price():
-    import requests
 
 def get_stock_price():
-    import yfinance as yf
+    try:
+        # API miễn phí (demo key)
+        url = "https://financialmodelingprep.com/api/v3/quote/FPT.VN?apikey=demo"
 
-    stock = yf.Ticker("FPT.VN")
-    data = stock.history(period="1d")
+        response = requests.get(url, timeout=10)
 
-    if not data.empty:
-        return round(data["Close"].iloc[-1], 2)
+        if response.status_code != 200:
+            print("Status code:", response.status_code)
+            return None
 
-    return None
         data = response.json()
 
-        if "Data" in data and len(data["Data"]) > 0:
-            return data["Data"][0]["LastPrice"]
+        if len(data) > 0:
+            return data[0]["price"]
 
     except Exception as e:
         print("ERROR:", e)
-
-    return None
-    data = response.json()
-
-    if "Data" in data and len(data["Data"]) > 0:
-        return data["Data"][0]["LastPrice"]
 
     return None
 
@@ -66,11 +58,16 @@ def send_email(price):
     msg["From"] = "info.lienanh@gmail.com"
     msg["To"] = "info.lienanh@gmail.com"
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login("info.lienanh@gmail.com", "minhanhapp123")
-        server.send_message(msg)
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login("info.lienanh.com", "minhanhapp123")
+            server.send_message(msg)
 
-    return "Email sent successfully!"
+        return "Email sent successfully!"
+
+    except Exception as e:
+        print("Email error:", e)
+        return "Lỗi gửi email"
 
 
 @app.route("/")

@@ -21,20 +21,27 @@ app = Flask(__name__)
 
 
 def get_stock_price():
-    url = "https://finance.vietstock.vn/FPT-ctcp-fpt.htm"
-    headers = {"User-Agent": "Mozilla/5.0"}
+    import requests
 
-    response = requests.get(url, headers=headers)
+    url = "https://finance.vietstock.vn/data/stockprice"
+    params = {
+        "symbol": "FPT"
+    }
+
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    response = requests.get(url, params=params, headers=headers)
 
     if response.status_code != 200:
+        print("Status:", response.status_code)
         return None
 
-    soup = BeautifulSoup(response.text, "html.parser")
+    data = response.json()
 
-    price_tag = soup.select_one(".price")
-
-    if price_tag:
-        return price_tag.text.strip()
+    if "Data" in data and len(data["Data"]) > 0:
+        return data["Data"][0]["LastPrice"]
 
     return None
 
